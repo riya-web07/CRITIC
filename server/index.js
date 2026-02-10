@@ -14,7 +14,10 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow your frontend
+    origin: [
+      "http://localhost:5173", // Localhost
+      "https://critic-two.vercel.app/", // <--- ADD YOUR VERCEL URL
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"], // Allow these actions
     allowedHeaders: ["Content-Type", "Authorization"], // Allow the Token header
     credentials: true,
@@ -28,7 +31,10 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: [
+      "http://localhost:5173", // Localhost
+      "https://critic-two.vercel.app/", // <--- ADD YOUR VERCEL URL
+    ],
     methods: ["GET", "POST"],
   },
 });
