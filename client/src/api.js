@@ -8,7 +8,7 @@ const CODE_API = axios.create({
 
 // 2. Client for Your Backend (Saving/Auth)
 const BACKEND_API = axios.create({
-  baseURL: "https://critic.onrender.com",
+  baseURL: "https://critic-two.vercel.app/",
 });
 
 // Add Interceptor ONLY to Backend API (to attach the Token)
