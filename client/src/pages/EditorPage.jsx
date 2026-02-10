@@ -121,9 +121,9 @@ const EditorPage = () => {
         socketRef.current.off("joined");
         socketRef.current.off("disconnected");
       }
-      setCode("");
+      setCode("// Write your code here\nconsole.log('Hello World!');");
       setLanguage("javascript");
-      setOutput([]);
+      setOutput(["Click 'Run' to see output..."]);
     };
   }, []);
 
