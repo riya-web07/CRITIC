@@ -8,5 +8,5 @@ export const initSocket = async () => {
     transports: ["websocket"],
   };
   // Connect to your Backend URL
-  return io("http://localhost:5000", options);
+  return io("https://critic.onrender.com", options);
 };
