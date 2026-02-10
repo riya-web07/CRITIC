@@ -121,6 +121,9 @@ const EditorPage = () => {
         socketRef.current.off("joined");
         socketRef.current.off("disconnected");
       }
+      setCode("");
+      setLanguage("javascript");
+      setOutput([]);
     };
   }, []);
 
