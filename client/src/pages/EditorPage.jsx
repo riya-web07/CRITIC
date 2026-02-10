@@ -259,7 +259,7 @@ const EditorPage = () => {
         <main className="flex-1 flex flex-col min-w-0">
           <section className="flex-1 relative min-h-0">
             <div className="absolute inset-0">
-              <EditorComponent onCodeChange={onCodeChange} />
+              <EditorComponent key={roomId} onCodeChange={onCodeChange} />
             </div>
           </section>
           <section className="h-64 bg-black border-t border-gray-700 shrink-0">
