@@ -17,7 +17,7 @@ const Auth = () => {
     const payload = isLogin ? { email, password } : { username, email, password };
 
     try {
-      const { data } = await axios.post(`http://localhost:5000/api/users${endpoint}`, payload);
+      const { data } = await axios.post(`https://critic.onrender.com/api/users${endpoint}`, payload);
 
       // Save the token to local storage (The Badge)
       localStorage.setItem("token", data.token);
