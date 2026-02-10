@@ -23,6 +23,7 @@ const EditorPage = () => {
   const [clients, setClients] = useState([]);
   const [ownerId, setOwnerId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Refs (To fix stale closures in socket listeners)
   const socketRef = useRef(null);
@@ -200,12 +201,18 @@ const EditorPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gray-900 text-white overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-screen bg-gray-900 text-white overflow-hidden">
       <header className="flex-none h-12 bg-gray-800 border-b border-gray-700 flex items-center px-4 justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button className="md:hidden text-gray-300 hover:text-white" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+            {/* Simple Hamburger Icon (3 lines) */}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
           <div className="flex items-center gap-2">
             <span className="text-xl">🚀</span>
-            <span className="font-bold text-lg tracking-tight">CRITIC</span>
+            <span className="font-bold text-lg tracking-tight hidden md:block">CRITIC</span>
           </div>
 
           <div className="relative">
@@ -226,19 +233,22 @@ const EditorPage = () => {
         </div>
 
         {/* Right side of Header */}
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           {(ownerId === null || ownerId === currentUserId) && (
             <button
               onClick={saveCode}
-              className="px-4 py-1 rounded text-sm font-semibold bg-blue-600 hover:bg-blue-500 transition text-white flex items-center gap-2"
+              className="p-1 md:px-3 md:py-1 rounded bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 transition"
+              title="Save Project" // Tooltip for hover
             >
-              Save 💾
+              <span className="text-lg">💾</span>
+              {/* HIDDEN on mobile, VISIBLE on medium screens up */}
+              <span className="hidden md:block font-semibold text-sm">Save</span>
             </button>
           )}
 
           {/* Optional: Show a "Read Only" badge for guests */}
           {ownerId && ownerId !== currentUserId && (
-            <span className="px-4 py-1 rounded text-sm font-semibold bg-gray-700 text-gray-400 border border-gray-600 cursor-not-allowed">
+            <span className="p-1 md:px-3 md:py-1 rounded text-sm font-semibold bg-gray-700 text-gray-400 border border-gray-600 cursor-not-allowed">
               Guest Mode (No Save)
             </span>
           )}
@@ -246,26 +256,42 @@ const EditorPage = () => {
           <button
             onClick={runCode}
             disabled={isLoading}
-            className={`px-4 py-1 rounded text-sm font-semibold transition flex items-center gap-2
-        ${isLoading ? "bg-gray-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-500"}
-      `}
+            className={`p-1 md:px-3 md:py-1 rounded transition flex items-center gap-2
+            ${isLoading ? "bg-gray-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-500"}
+        `}
           >
-            {isLoading ? "Running..." : "Run Code ▶"}
+            <span className="text-lg">▶</span>
+            {/* HIDDEN on mobile, VISIBLE on medium screens up */}
+            <span className="hidden md:block font-semibold text-sm">{isLoading ? "Running..." : "Run"}</span>
           </button>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 bg-gray-900 border-r border-gray-700 flex flex-col">
+        <aside
+          className={`
+    fixed md:relative z-50 h-full w-64 bg-gray-900 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out
+    ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+`}
+        >
+          {/* Close Button for Mobile Sidebar */}
+          <div className="md:hidden flex justify-end p-2">
+            <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 hover:text-white">
+              ✖
+            </button>
+          </div>
+
           <Sidebar clients={clients} />
         </aside>
+        {/* Add a dark overlay when sidebar is open on mobile */}
+        {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
         <main className="flex-1 flex flex-col min-w-0">
           <section className="flex-1 relative min-h-0">
             <div className="absolute inset-0">
               <EditorComponent key={roomId} onCodeChange={onCodeChange} />
             </div>
           </section>
-          <section className="h-64 bg-black border-t border-gray-700 shrink-0">
+          <section className="h-32 md:h-64 bg-black border-t border-gray-700 shrink-0">
             <TerminalComponent />
           </section>
         </main>

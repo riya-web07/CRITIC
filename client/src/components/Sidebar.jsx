@@ -26,7 +26,6 @@ const Sidebar = ({ clients }) => {
     navigate("/home");
   };
 
-  // DOWNLOAD CODE
   const downloadCode = () => {
     const extension = FILE_EXTENSIONS[language] || "txt";
     const blob = new Blob([code], { type: "text/plain" });
@@ -40,41 +39,41 @@ const Sidebar = ({ clients }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#151515] p-4 text-white">
-      {/* Logo */}
-      <div className="border-b border-gray-700 pb-4 mb-4">
-        <h2 className="font-bold text-lg text-green-500 flex items-center gap-2">
-          <span>👥</span> Connected
-        </h2>
+    <div className="flex flex-col h-[100dvh] bg-[#151515] text-white p-4">
+      {/* 1. HEADER (Logo/Title) */}
+      <div className="flex items-center gap-2 mb-6 border-b border-gray-700 pb-4 shrink-0">
+        <span className="text-2xl">👥</span>
+        <h2 className="font-bold text-lg text-green-500">Connected</h2>
       </div>
 
-      {/* Client List */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-1 gap-4">
+      {/* 2. SCROLLABLE LIST (Grows to fill space) */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+        <div className="flex flex-col gap-3">
           {clients.map((client) => (
-            <div key={client.socketId} className="flex items-center gap-3 hover:bg-gray-800 p-2 rounded transition cursor-pointer">
-              <Avatar name={client.username} size="40" round="10px" />
+            <div key={client.socketId} className="flex items-center gap-3 p-2 rounded hover:bg-gray-800 transition cursor-default">
+              <Avatar name={client.username} size="36" round="8px" className="font-bold" />
               <div className="flex flex-col">
-                <span className="font-bold text-sm">{client.username}</span>
-                <span className="text-xs text-green-400">● Online</span>
+                <span className="font-semibold text-sm truncate max-w-[120px]" title={client.username}>
+                  {client.username}
+                </span>
+                <span className="text-[10px] uppercase font-bold text-green-500 tracking-wider">Online</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Bottom Buttons */}
-      <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-gray-700">
-        <button
-          onClick={copyRoomId}
-          className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center gap-2"
-        >
+      {/* 3. FIXED BOTTOM BUTTONS (Stays at bottom) */}
+      <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-gray-700 shrink-0 pb-6 md:pb-0">
+        <button onClick={copyRoomId} className="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded text-sm transition">
           Copy Room ID
         </button>
-        <button onClick={downloadCode} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded transition text-sm">
+
+        <button onClick={downloadCode} className="w-full py-2 bg-green-600 hover:bg-green-500 text-white font-semibold rounded text-sm transition">
           Download Code
         </button>
-        <button onClick={leaveRoom} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded transition">
+
+        <button onClick={leaveRoom} className="w-full py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded text-sm transition">
           Leave Room
         </button>
       </div>
