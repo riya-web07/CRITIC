@@ -5,6 +5,8 @@ export const LANGUAGE_VERSIONS = {
   java: "15.0.2",
   csharp: "6.12.0",
   php: "8.2.3",
+  c: "10.2.0", // Added
+  cpp: "10.2.0", // Added
 };
 
 export const CODE_SNIPPETS = {
@@ -14,6 +16,8 @@ export const CODE_SNIPPETS = {
   java: `\npublic class HelloWorld {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Hello World");\n\t}\n}\n`,
   csharp: `using System;\n\nnamespace HelloWorld\n{\n\tclass Hello \n\t{\n\t\tstatic void Main(string[] args)\n\t\t{\n\t\t\tConsole.WriteLine("Hello World in C#");\n\t\t}\n\t}\n}\n`,
   php: "<?php\n\n$name = 'Alex';\necho $name;\n",
+  c: `#include <stdio.h>\n\nint main() {\n\tprintf("Hello World in C\\n");\n\treturn 0;\n}\n`,
+  cpp: `#include <iostream>\n\nint main() {\n\tstd::cout << "Hello World in C++" << std::endl;\n\treturn 0;\n}\n`,
 };
 
 export const FILE_EXTENSIONS = {
@@ -23,4 +27,6 @@ export const FILE_EXTENSIONS = {
   java: "java",
   csharp: "cs",
   php: "php",
+  c: "c",
+  cpp: "cpp",
 };
