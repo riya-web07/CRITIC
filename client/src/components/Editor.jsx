@@ -1,33 +1,442 @@
-import React from "react";
+import React, { useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useRecoilState } from "recoil";
 import { codeState, languageState } from "../store/atoms";
 
+// =========================================================
+// 🧠 STATIC KEYWORD LISTS (Instant Load)
+// =========================================================
+
+const CPP_KEYWORDS = [
+  "auto",
+  "break",
+  "case",
+  "char",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extern",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "int",
+  "long",
+  "register",
+  "return",
+  "short",
+  "signed",
+  "sizeof",
+  "static",
+  "struct",
+  "switch",
+  "typedef",
+  "union",
+  "unsigned",
+  "void",
+  "volatile",
+  "while",
+  "class",
+  "namespace",
+  "template",
+  "typename",
+  "using",
+  "virtual",
+  "friend",
+  "public",
+  "protected",
+  "private",
+  "bool",
+  "true",
+  "false",
+  "new",
+  "delete",
+  "cout",
+  "cin",
+  "endl",
+  "include",
+  "iostream",
+  "vector",
+  "string",
+  "std",
+];
+
+const C_KEYWORDS = [
+  "auto",
+  "break",
+  "case",
+  "char",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extern",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "int",
+  "long",
+  "register",
+  "return",
+  "short",
+  "signed",
+  "sizeof",
+  "static",
+  "struct",
+  "switch",
+  "typedef",
+  "union",
+  "unsigned",
+  "void",
+  "volatile",
+  "while",
+  "printf",
+  "scanf",
+  "include",
+  "stdio",
+  "stdlib",
+  "main",
+];
+
+const JAVA_KEYWORDS = [
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "true",
+  "false",
+  "null",
+  "System",
+  "out",
+  "println",
+  "String",
+  "main",
+  "args",
+];
+
+const PYTHON_KEYWORDS = [
+  "and",
+  "as",
+  "assert",
+  "break",
+  "class",
+  "continue",
+  "def",
+  "del",
+  "elif",
+  "else",
+  "except",
+  "False",
+  "finally",
+  "for",
+  "from",
+  "global",
+  "if",
+  "import",
+  "in",
+  "is",
+  "lambda",
+  "None",
+  "nonlocal",
+  "not",
+  "or",
+  "pass",
+  "raise",
+  "return",
+  "True",
+  "try",
+  "while",
+  "with",
+  "yield",
+  "print",
+  "len",
+  "range",
+  "open",
+  "str",
+  "int",
+  "float",
+  "list",
+  "dict",
+  "set",
+];
+
+const CSHARP_KEYWORDS = [
+  "abstract",
+  "as",
+  "base",
+  "bool",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "checked",
+  "class",
+  "const",
+  "continue",
+  "decimal",
+  "default",
+  "delegate",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "event",
+  "explicit",
+  "extern",
+  "false",
+  "finally",
+  "fixed",
+  "float",
+  "for",
+  "foreach",
+  "goto",
+  "if",
+  "implicit",
+  "in",
+  "int",
+  "interface",
+  "internal",
+  "is",
+  "lock",
+  "long",
+  "namespace",
+  "new",
+  "null",
+  "object",
+  "operator",
+  "out",
+  "override",
+  "params",
+  "private",
+  "protected",
+  "public",
+  "readonly",
+  "ref",
+  "return",
+  "sbyte",
+  "sealed",
+  "short",
+  "sizeof",
+  "stackalloc",
+  "static",
+  "string",
+  "struct",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typeof",
+  "uint",
+  "ulong",
+  "unchecked",
+  "unsafe",
+  "ushort",
+  "using",
+  "virtual",
+  "void",
+  "volatile",
+  "while",
+  "Console",
+  "WriteLine",
+  "ReadLine",
+  "var",
+];
+
+const PHP_KEYWORDS = [
+  "__halt_compiler",
+  "abstract",
+  "and",
+  "array",
+  "as",
+  "break",
+  "callable",
+  "case",
+  "catch",
+  "class",
+  "clone",
+  "const",
+  "continue",
+  "declare",
+  "default",
+  "die",
+  "do",
+  "echo",
+  "else",
+  "elseif",
+  "empty",
+  "enddeclare",
+  "endfor",
+  "endforeach",
+  "endif",
+  "endswitch",
+  "endwhile",
+  "eval",
+  "exit",
+  "extends",
+  "final",
+  "finally",
+  "for",
+  "foreach",
+  "function",
+  "global",
+  "goto",
+  "if",
+  "implements",
+  "include",
+  "include_once",
+  "instanceof",
+  "insteadof",
+  "interface",
+  "isset",
+  "list",
+  "namespace",
+  "new",
+  "or",
+  "print",
+  "private",
+  "protected",
+  "public",
+  "require",
+  "require_once",
+  "return",
+  "static",
+  "switch",
+  "throw",
+  "trait",
+  "try",
+  "unset",
+  "use",
+  "var",
+  "while",
+  "xor",
+  "yield",
+  "php",
+  "$this",
+];
+
+// =========================================================
+// 🚀 COMPONENT START
+// =========================================================
+
 const EditorComponent = ({ onCodeChange }) => {
-  const [code] = useRecoilState(codeState); // Removed setCode, we use the prop now
+  const [code] = useRecoilState(codeState);
   const [language] = useRecoilState(languageState);
+
+  // Use a Ref to hold the editor instance
+  const editorRef = useRef(null);
 
   const handleEditorChange = (value) => {
     if (value !== undefined) {
-      onCodeChange(value); // <--- Call the socket function
+      onCodeChange(value);
     }
+  };
+
+  // 🔌 MOUNT HANDLER: Registers Suggestions
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    // Helper to register keywords
+    const registerKeywords = (lang, keywords) => {
+      monaco.languages.registerCompletionItemProvider(lang, {
+        provideCompletionItems: (model, position) => {
+          const suggestions = keywords.map((word) => ({
+            label: word,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: word,
+          }));
+          return { suggestions };
+        },
+      });
+    };
+
+    // Register all supported languages
+    registerKeywords("cpp", CPP_KEYWORDS);
+    registerKeywords("c", C_KEYWORDS);
+    registerKeywords("java", JAVA_KEYWORDS);
+    registerKeywords("python", PYTHON_KEYWORDS);
+    registerKeywords("csharp", CSHARP_KEYWORDS);
+    registerKeywords("php", PHP_KEYWORDS);
+    // Note: JS and TS are supported natively by Monaco!
   };
 
   return (
     <div className="h-full w-full bg-[#1e1e1e] relative">
       <Editor
         height="100%"
+        width="100%" // Added explicit width
         defaultLanguage="javascript"
         language={language}
         theme="vs-dark"
-        value={code} // Value comes from Recoil (which is updated by Socket)
+        value={code}
         onChange={handleEditorChange}
+        onMount={handleEditorDidMount} // <--- ATTACHED HERE
         options={{
           minimap: { enabled: false },
           fontSize: 14,
           wordWrap: "on",
           scrollBeyondLastLine: false,
           automaticLayout: true,
+          padding: { top: 20 },
+          fontFamily: "'Fira Code', 'Consolas', monospace",
+          fontLigatures: true,
+          // Enable quick suggestions
+          quickSuggestions: { other: true, comments: true, strings: true },
         }}
       />
     </div>
