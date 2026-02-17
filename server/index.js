@@ -57,8 +57,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  // A. USER JOINS A ROOM (Standard + Auto-Rename)
-  // Removed 'callback' to fix the sidebar disappearing bug
+  // A. USER JOINS A ROOM
   socket.on("join", ({ roomId, username }) => {
     // 1. Check existing users
     const clientsInRoom = getAllConnectedClients(roomId);
@@ -75,10 +74,12 @@ io.on("connection", (socket) => {
     userSocketMap[socket.id] = finalUsername;
     socket.join(roomId);
 
-    // 4. Broadcast to EVERYONE (including the sender)
-    // The client uses 'socketId' to check if it's them
-    const clients = getAllConnectedClients(roomId);
+    // --- NEW: Send Official Name to the User who joined ---
+    io.to(socket.id).emit("join:success", finalUsername);
+    // -----------------------------------------------------
 
+    // 4. Broadcast to EVERYONE (to update Sidebars)
+    const clients = getAllConnectedClients(roomId);
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
         clients,
