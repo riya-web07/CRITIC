@@ -57,26 +57,28 @@ io.on("connection", (socket) => {
     });
   });
 
-  // A. USER JOINS A ROOM (With Auto-Rename for Duplicates)
-  socket.on("join", ({ roomId, username }, callback) => {
-    // <--- 1. Add 'callback' param
+  // A. USER JOINS A ROOM (Standard + Auto-Rename)
+  // Removed 'callback' to fix the sidebar disappearing bug
+  socket.on("join", ({ roomId, username }) => {
+    // 1. Check existing users
     const clientsInRoom = getAllConnectedClients(roomId);
     const isNameTaken = clientsInRoom.some((client) => client.username === username);
 
     let finalUsername = username;
 
+    // 2. Auto-Rename if needed
     if (isNameTaken) {
       finalUsername = `${username} (${Math.floor(100 + Math.random() * 900)})`;
     }
 
+    // 3. Register User & Join Room
     userSocketMap[socket.id] = finalUsername;
     socket.join(roomId);
 
-    // 2. Send the confirmation back to the ONE user who joined
-    if (callback) callback(finalUsername);
-
-    // 3. Broadcast to everyone else
+    // 4. Broadcast to EVERYONE (including the sender)
+    // The client uses 'socketId' to check if it's them
     const clients = getAllConnectedClients(roomId);
+
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
         clients,
@@ -101,7 +103,7 @@ io.on("connection", (socket) => {
   // When a new user joins, we ask an existing user to send the current code
   socket.on("sync-code", ({ socketId, code, language }) => {
     io.to(socketId).emit("code-change", { code });
-    io.to(socketId).emit("language-change", { language }); // <--- New!
+    io.to(socketId).emit("language-change", { language });
   });
 
   // D. DISCONNECT
