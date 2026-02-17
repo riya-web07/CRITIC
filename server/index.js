@@ -46,18 +46,7 @@ function getAllConnectedClients(roomId) {
 }
 
 io.on("connection", (socket) => {
-  // console.log(`User Connected: ${socket.id}`);
-
-  socket.on("chat:send", ({ roomId, username, message }) => {
-    // Broadcast to everyone in the room INCLUDING sender (so they see their own sync)
-    io.to(roomId).emit("chat:receive", {
-      username,
-      message,
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  // A. USER JOINS A ROOM
+  // A. USER JOINS
   socket.on("join", ({ roomId, username }) => {
     // 1. Check existing users
     const clientsInRoom = getAllConnectedClients(roomId);
@@ -74,11 +63,11 @@ io.on("connection", (socket) => {
     userSocketMap[socket.id] = finalUsername;
     socket.join(roomId);
 
-    // --- NEW: Send Official Name to the User who joined ---
+    // 4. Send the CONFIRMED name to the user who just joined
+    // This fixes the "Split Brain" issue
     io.to(socket.id).emit("join:success", finalUsername);
-    // -----------------------------------------------------
 
-    // 4. Broadcast to EVERYONE (to update Sidebars)
+    // 5. Broadcast to everyone else
     const clients = getAllConnectedClients(roomId);
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
@@ -89,25 +78,29 @@ io.on("connection", (socket) => {
     });
   });
 
-  // B. CODE CHANGE (Typing)
+  // B. CHAT MESSAGE (The Fix)
+  socket.on("chat:send", ({ roomId, message }) => {
+    // IGNORE the username from frontend. Use the server's truth.
+    const username = userSocketMap[socket.id];
+
+    io.to(roomId).emit("chat:receive", {
+      username, // <--- This is now guaranteed to be "Test1 (311)"
+      message,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // ... (Keep your code-change, language-change, sync-code, disconnecting exactly as they were)
   socket.on("code-change", ({ roomId, code }) => {
-    // Broadcast code to everyone inside the room EXCEPT the sender
     socket.in(roomId).emit("code-change", { code });
   });
-
   socket.on("language-change", ({ roomId, language }) => {
-    // Tell everyone else in the room to switch language
     socket.in(roomId).emit("language-change", { language });
   });
-
-  // C. SYNC CODE (Updated to include Language)
-  // When a new user joins, we ask an existing user to send the current code
   socket.on("sync-code", ({ socketId, code, language }) => {
     io.to(socketId).emit("code-change", { code });
     io.to(socketId).emit("language-change", { language });
   });
-
-  // D. DISCONNECT
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
