@@ -48,6 +48,15 @@ function getAllConnectedClients(roomId) {
 io.on("connection", (socket) => {
   // console.log(`User Connected: ${socket.id}`);
 
+  socket.on("chat:send", ({ roomId, username, message }) => {
+    // Broadcast to everyone in the room INCLUDING sender (so they see their own sync)
+    io.to(roomId).emit("chat:receive", {
+      username,
+      message,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // A. USER JOINS A ROOM
   socket.on("join", ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
