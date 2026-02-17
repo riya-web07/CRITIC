@@ -58,31 +58,29 @@ io.on("connection", (socket) => {
   });
 
   // A. USER JOINS A ROOM (With Auto-Rename for Duplicates)
-  socket.on("join", ({ roomId, username }) => {
-    // 1. Get users ALREADY in the room (before this new user joins)
+  socket.on("join", ({ roomId, username }, callback) => {
+    // <--- 1. Add 'callback' param
     const clientsInRoom = getAllConnectedClients(roomId);
-
-    // 2. Check if the name is taken
     const isNameTaken = clientsInRoom.some((client) => client.username === username);
 
     let finalUsername = username;
 
-    // 3. If taken, append a random number to make it unique
     if (isNameTaken) {
       finalUsername = `${username} (${Math.floor(100 + Math.random() * 900)})`;
     }
 
-    // 4. Register the FINAL username (Original or Renamed)
     userSocketMap[socket.id] = finalUsername;
     socket.join(roomId);
 
-    // 5. Notify everyone (including the new user)
-    const clients = getAllConnectedClients(roomId);
+    // 2. Send the confirmation back to the ONE user who joined
+    if (callback) callback(finalUsername);
 
+    // 3. Broadcast to everyone else
+    const clients = getAllConnectedClients(roomId);
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
         clients,
-        username: finalUsername, // <--- Send the unique name!
+        username: finalUsername,
         socketId: socket.id,
       });
     });
