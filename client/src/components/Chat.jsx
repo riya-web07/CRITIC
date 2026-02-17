@@ -4,6 +4,7 @@ const Chat = ({ socket, roomId, username }) => {
   const [isOpen, setIsOpen] = useState(false); // Collapsible state
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -11,7 +12,12 @@ const Chat = ({ socket, roomId, username }) => {
 
     const handleReceiveMessage = (data) => {
       setMessages((prev) => [...prev, data]);
-      // Auto-scroll to bottom
+      setIsOpen((currentIsOpen) => {
+        if (!currentIsOpen) {
+          setHasNewMessage(true);
+        }
+        return currentIsOpen;
+      });
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -23,6 +29,13 @@ const Chat = ({ socket, roomId, username }) => {
       socket.off("chat:receive", handleReceiveMessage);
     };
   }, [socket]);
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setHasNewMessage(false);
+    }
+  };
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -38,9 +51,16 @@ const Chat = ({ socket, roomId, username }) => {
     <div className={`fixed bottom-4 right-4 z-50 flex flex-col items-end transition-all ${isOpen ? "w-80" : "w-auto"}`}>
       {/* Chat Toggle Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleChat}
         className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg mb-2 flex items-center justify-center transition-colors"
       >
+        {hasNewMessage && !isOpen && (
+          <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+          </span>
+        )}
+
         {isOpen ? (
           // Close Icon (X)
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
